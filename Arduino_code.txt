@@ -1,0 +1,71 @@
+#include <WiFi.h>
+#include <MySQL_Connection.h>
+#include <MySQL_Cursor.h>
+const char ssid[] = "Cat Village"; //輸入你要連的 WIFI 名稱
+const char password[] = "39y01m02d"; //輸入 WIFI 密碼
+IPAddress server_addr(10,0,12,10); //輸入你的 WIFI 的 IP Address //這裡是用逗號做分隔，不是點
+int MYSQLPort = 3306; //輸入 MySQL 使用的 port 號(預設為 3306)
+char user[] = "user34"; //MySQL 使用者的帳號
+char pass[] = "1379"; //MySQL 使用者的密碼
+WiFiClient client; //連接 Wifi 的物件
+MySQL_Connection conn((Client *)&client); //連接 MySQL 的物件
+void setup() {
+  Serial.begin(115200);
+  delay(10);
+  //連線你輸入的 WIFI
+  Serial.print("\nConnecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  //連線至 MySQL
+  if (conn.connect(server_addr, 3306, user, pass))
+    delay(1000);
+  else
+    Serial.println("Connection failed.");
+  delay(2000);
+  //將溫度 30，濕度 60 傳至 MySQL
+  String INSERT_SQL = "INSERT INTO tempandhumd.datalog (temp,humd) VALUES('30','60')"; //SQL 的語法
+  MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
+  cur_mem->execute(INSERT_SQL.c_str()); //執行剛剛的 SQL 語法
+  delete cur_mem; //因為已執行完 SQL 語法，不需要了，所以刪掉它
+  conn.close(); //關掉與 MySQL 的連結
+  Serial.println("Data Saved.");
+}
+void loop() {
+}
+
+
+追加感測器讀數code
+#include <SimpleDHT.h> 
+int pinDHT11 = 15; //ESP32 GPIO15
+SimpleDHT11 dht11; 
+void setup() { 
+  Serial.begin(9600); 
+} 
+void loop() { 
+  byte temperature = 0; 
+  byte humidity = 0; 
+  int err = SimpleDHTErrSuccess; // start working...
+  Serial.println("================================="); 
+  if ((err = dht11.read(pinDHT11, &temperature, &humidity, NULL)) != SimpleDHTErrSuccess) { 
+    Serial.print("Read DHT11 failed, err=");
+    Serial.println(err);
+    delay(1000); 
+    return; 
+  }
+  Serial.print("Humidity = "); 
+  Serial.print((int)humidity);
+  Serial.print("% , "); 
+  Serial.print("Temperature = ");
+  Serial.print((int)temperature); 
+  Serial.println("C ");
+  delay(3000); //每 3 秒顯示一次 
+}
