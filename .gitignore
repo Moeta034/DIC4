@@ -2,3 +2,5 @@ venv/
 __pycache__/
 *.sqlite3
 .env
+esp32_arduino.ino
+init_db_with_mock.py
