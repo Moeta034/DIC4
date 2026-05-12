@@ -1,0 +1,35 @@
+==========================================
+啟動指令 (Start Commands)
+==========================================
+(請在這個資料夾開啟三個不同的命令提示字元 cmd，並分別輸入以下指令)
+
+1. 啟動 Flask API 伺服器 (接收資料的後端)
+cd C:\Users\user\Desktop\新增資料夾
+venv\Scripts\python flask_app.py
+
+2. 啟動 ESP32 模擬器 (每 2 秒發送一次感測器資料)
+cd C:\Users\user\Desktop\新增資料夾
+venv\Scripts\python esp32_sim.py
+
+3. 啟動 Streamlit 視覺化儀表板 (網頁圖表介面)
+cd C:\Users\user\Desktop\新增資料夾
+venv\Scripts\streamlit run streamlit_app.py
+
+
+==========================================
+關閉指令 (Stop Commands)
+==========================================
+如果你是按照上面的方式「手動開啟」三個視窗，關掉它們最簡單的方法是：
+➤ 直接把你啟動的那三個黑底白字的「終端機視窗」按右上角 (X) 關掉，或是選取視窗後按下鍵盤的 [Ctrl] + [C]。
+
+------------------------------------------
+如果你想「強制透過指令」殺死所有背景卡住的 Python 行程，或佔用的網頁連接埠，請在此資料夾開啟 Windows PowerShell 並輸入以下指令：
+
+# (最快) 殺死所有運作中的 Python 程式 (請小心使用，因為會一次把上面三個都終止)
+taskkill /F /IM python.exe
+
+# 釋放被 Flask 單獨佔用的 5000 Port (PowerShell)
+Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }
+
+# 釋放被 Streamlit 單獨佔用的 8501~8505 Port (PowerShell)
+5..1 | ForEach-Object { Get-NetTCPConnection -LocalPort (8500+$_) -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force } }
